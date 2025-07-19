@@ -23,7 +23,7 @@ interface Message {
   direction?: TranslationDirection;
 }
 
-const GEMINI_API_KEY = "AIzaSyCQLnQzeYohV5TJiRSEf16r4gYluaDdl7Y"; // 🔑 ← ここにあなたのAPIキーを入力してください
+const GEMINI_API_KEY = "<APIキー>"; // 🔑 ← ここにあなたのAPIキーを入力してください
 
 const DialectTranslator: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
