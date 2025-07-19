@@ -33,6 +33,10 @@ services:
       - DB_NAME=db
     depends_on:
       - mysql
+    # ... build, portsなどの設定 ...
+    env_file:
+      - ./backend/.env # この行を追加
+
 
   frontend:
     build: ./frontend

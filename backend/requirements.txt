@@ -4,3 +4,6 @@ mysqlclient
 sqlalchemy
 pymysql
 python-dotenv
+# 以下を追加
+google-generativeai
+pydantic-settings
