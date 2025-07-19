@@ -5,6 +5,9 @@
 任意のディレクトリにクローンする
 git clone https://github.com/KunitakeHyuga/Hackathon.git
 
+自分のブランチを切る
+git checkout -b feature/yourname
+
 node.jsをインストールしておく(以下記事を参考に)
 https://zenn.dev/kuuki/articles/windows-nodejs-install
 
@@ -17,3 +20,4 @@ dockerdesktop立ち上げる
 WSL2のubuntuでdocker動かすのでも可
 docker compose build
 docker compose up
+
