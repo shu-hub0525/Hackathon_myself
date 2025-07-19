@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, ArrowLeftRight, Globe } from "lucide-react";
 
-// ▼▼▼ 型定義を追加 ▼▼▼
-
-// 扱う方言の型
+// ▼▼▼ 型定義 ▼▼▼
 const dialects = [
   "北海道弁",
   "東北弁（津軽弁）",
@@ -14,23 +12,19 @@ const dialects = [
 ] as const;
 type Dialect = (typeof dialects)[number];
 
-// 翻訳方向の型
 type TranslationDirection = "standard-to-dialect" | "dialect-to-standard";
 
-// メッセージオブジェクトの型
 interface Message {
   id: number;
-  type: "user" | "bot";
+  type: "user" | "bot" | "error"; // エラータイプを追加
   content: string;
   timestamp: Date;
-  dialect?: Dialect; // botのメッセージにのみ存在
-  direction?: TranslationDirection; // botのメッセージにのみ存在
+  dialect?: Dialect;
+  direction?: TranslationDirection;
 }
-
 // ▲▲▲ 型定義ここまで ▲▲▲
 
 const DialectTranslator: React.FC = () => {
-  // ▼▼▼ Stateに型を適用 ▼▼▼
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState<string>("");
   const [selectedDialect, setSelectedDialect] = useState<Dialect>("関西弁");
@@ -38,7 +32,6 @@ const DialectTranslator: React.FC = () => {
     useState<TranslationDirection>("standard-to-dialect");
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  // ▲▲▲ Stateの型適用ここまで ▲▲▲
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -48,74 +41,36 @@ const DialectTranslator: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // モックの翻訳API（実際のハッカソンではバックエンドAPIに接続）
-  const mockTranslate = async (
+  // ▼▼▼ バックエンドAPIを呼び出す関数 ▼▼▼
+  const callTranslateAPI = async (
     text: string,
     dialect: Dialect,
     direction: TranslationDirection
   ): Promise<string> => {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // バックエンドのURL（PythonサーバーのURLに合わせて変更してください）
+    const API_ENDPOINT = "http://localhost:8000/translate";
 
-    // 型安全のため、より厳密な定義も可能だが、ここでは簡略化
-    const examples: any = {
-      関西弁: {
-        "standard-to-dialect": {
-          こんにちは: "こんにちわ〜",
-          ありがとう: "おおきに",
-          すみません: "すんまへん",
-          そうですね: "せやな",
-          元気です: "元気やで",
-        },
-        "dialect-to-standard": {
-          おおきに: "ありがとう",
-          せやな: "そうですね",
-          あかん: "だめ",
-          しんどい: "疲れた",
-          ほんま: "本当",
-        },
+    const response = await fetch(API_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      博多弁: {
-        "standard-to-dialect": {
-          こんにちは: "こんちゃ",
-          ありがとう: "ありがとうございます",
-          すみません: "すんません",
-          そうですね: "そうですね〜",
-          元気です: "元気ばい",
-        },
-      },
-      沖縄弁: {
-        "standard-to-dialect": {
-          こんにちは: "はいさい",
-          ありがとう: "にふぇーでーびる",
-          すみません: "ごめんなさい",
-          そうですね: "うん、そうさー",
-          元気です: "元気さー",
-        },
-      },
-    };
+      body: JSON.stringify({
+        text: text,
+        dialect: dialect,
+        direction: direction,
+      }),
+    });
 
-    const dialectExamples = examples[dialect]?.[direction] || {};
-    const exactMatch = dialectExamples[text];
-
-    if (exactMatch) {
-      return exactMatch;
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
     }
 
-    if (direction === "standard-to-dialect") {
-      switch (dialect) {
-        case "関西弁":
-          return text.replace(/です/g, "や").replace(/ます/g, "まっせ") + "〜";
-        case "博多弁":
-          return text + "ばい";
-        case "沖縄弁":
-          return text + "さー";
-        default:
-          return text + `（${dialect}風）`;
-      }
-    } else {
-      return text.replace(/〜/g, "").replace(/ばい/g, "").replace(/さー/g, "");
-    }
+    const data = await response.json();
+    // バックエンドからの返却値のキーを 'translated_text' と想定
+    return data.translated_text;
   };
+  // ▲▲▲ API呼び出しここまで ▲▲▲
 
   const handleTranslate = async (): Promise<void> => {
     if (!inputText.trim()) return;
@@ -132,7 +87,8 @@ const DialectTranslator: React.FC = () => {
     setIsTranslating(true);
 
     try {
-      const translatedText = await mockTranslate(
+      // 修正：モック関数からAPI呼び出しに変更
+      const translatedText = await callTranslateAPI(
         inputText,
         selectedDialect,
         translationDirection
@@ -150,13 +106,19 @@ const DialectTranslator: React.FC = () => {
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error("Translation error:", error);
-      // ここでエラーメッセージをUIに表示する処理も追加できる
+      // 修正：エラーメッセージをUIに表示
+      const errorMessage: Message = {
+        id: Date.now() + 1,
+        type: "error",
+        content: "翻訳に失敗しました。時間をおいて再度お試しください。",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsTranslating(false);
     }
   };
 
-  // ▼▼▼ イベントハンドラに型を適用 ▼▼▼
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -173,7 +135,6 @@ const DialectTranslator: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setInputText(e.target.value);
   };
-  // ▲▲▲ イベントハンドラの型適用ここまで ▲▲▲
 
   const toggleDirection = (): void => {
     setTranslationDirection((prev) =>
@@ -186,7 +147,7 @@ const DialectTranslator: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white font-sans">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* ヘッダー */}
+        {/* ... (ヘッダー部分は変更なし) ... */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Globe className="w-8 h-8 text-cyan-400" />
@@ -197,13 +158,13 @@ const DialectTranslator: React.FC = () => {
           <p className="text-gray-300 text-lg">日本全国の方言を楽しく学ぼう</p>
         </div>
 
-        {/* 翻訳設定パネル */}
+        {/* ... (翻訳設定パネルは変更なし) ... */}
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-white/20">
           <div className="flex flex-col md:flex-row items-center gap-4">
             <div className="flex items-center gap-3">
               <select
                 value={selectedDialect}
-                onChange={handleDialectChange} // 修正
+                onChange={handleDialectChange}
                 className="bg-white/20 backdrop-blur-sm text-white rounded-lg px-4 py-2 border border-white/30 focus:border-cyan-400 focus:outline-none"
               >
                 {dialects.map((dialect) => (
@@ -213,7 +174,6 @@ const DialectTranslator: React.FC = () => {
                 ))}
               </select>
             </div>
-
             <button
               onClick={toggleDirection}
               className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-4 py-2 rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all transform hover:scale-105"
@@ -251,7 +211,9 @@ const DialectTranslator: React.FC = () => {
                     className={`max-w-xs md:max-w-md px-4 py-3 rounded-2xl ${
                       message.type === "user"
                         ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white"
-                        : "bg-white/20 backdrop-blur-sm text-white border border-white/30"
+                        : message.type === "bot"
+                        ? "bg-white/20 backdrop-blur-sm text-white border border-white/30"
+                        : "bg-red-500/50 backdrop-blur-sm text-white border border-red-500/80" // エラーメッセージ用のスタイル
                     }`}
                   >
                     <p className="text-sm md:text-base">{message.content}</p>
@@ -292,13 +254,13 @@ const DialectTranslator: React.FC = () => {
           </div>
         </div>
 
-        {/* 入力エリア */}
+        {/* ... (入力エリアとフッターは変更なし) ... */}
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
           <div className="flex gap-3">
             <input
               type="text"
               value={inputText}
-              onChange={handleInputChange} // 修正
+              onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               placeholder="翻訳したいテキストを入力してください..."
               className="flex-1 bg-white/20 backdrop-blur-sm text-white placeholder-gray-300 rounded-xl px-4 py-3 border border-white/30 focus:border-cyan-400 focus:outline-none"
@@ -314,7 +276,6 @@ const DialectTranslator: React.FC = () => {
           </div>
         </div>
 
-        {/* フッター */}
         <div className="text-center mt-6 text-gray-400 text-sm">
           <p>日本の方言文化を楽しく学び、保存していきましょう 🗾</p>
         </div>
