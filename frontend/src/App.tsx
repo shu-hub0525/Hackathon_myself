@@ -47,10 +47,13 @@ const DialectTranslator: React.FC = () => {
     dialect: Dialect,
     direction: TranslationDirection
   ): Promise<string> => {
-    // バックエンドのURL（PythonサーバーのURLに合わせて変更してください）
-    const API_ENDPOINT = "https://dogenkotu.onrender.com";
+    // VercelからベースURLを取得
+    const baseUrl = process.env.REACT_APP_API_ENDPOINT;
 
-    const response = await fetch(API_ENDPOINT, {
+    // パスを結合して完全なURLを作成
+    const fullUrl = `${baseUrl}/translate`;
+
+    const response = await fetch(fullUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
