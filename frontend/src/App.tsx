@@ -157,7 +157,9 @@ const DialectTranslator: React.FC = () => {
               どげんこつ？
             </h1>
           </div>
-          <p className="text-gray-300 text-lg">日本全国の方言を楽しく学ぼう</p>
+          <p className="text-gray-300 text-lg">
+            日本全国の気になる方言を翻訳してみよう
+          </p>
         </div>
 
         {/* ... (翻訳設定パネルは変更なし) ... */}
@@ -279,7 +281,7 @@ const DialectTranslator: React.FC = () => {
         </div>
 
         <div className="text-center mt-6 text-gray-400 text-sm">
-          <p>日本の方言文化を楽しく学び、保存していきましょう 🗾</p>
+          <p>翻訳した方言を使ってみよう</p>
         </div>
       </div>
     </div>
