@@ -18,7 +18,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:3000",
-    "https://dogenkotu.vercel.app/",  # ← この行を追加
+    "https://dogenkotu.vercel.app",  # ← この行を追加
 ]
 
 # CORSを回避するために設定
