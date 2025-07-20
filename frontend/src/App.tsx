@@ -8,6 +8,7 @@ const dialects = [
   "関西弁",
   "広島弁",
   "博多弁",
+  "佐賀弁",
   "沖縄弁",
 ] as const;
 type Dialect = (typeof dialects)[number];
