@@ -16,6 +16,11 @@ from . import schemas
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",
+    "https://dogenkotu.vercel.app/",  # ← この行を追加
+]
+
 # CORSを回避するために設定
 app.add_middleware(
     CORSMiddleware,
