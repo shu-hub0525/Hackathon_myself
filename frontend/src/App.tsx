@@ -150,9 +150,8 @@ const DialectTranslator: React.FC = () => {
         {/* ... (ヘッダー部分は変更なし) ... */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Globe className="w-8 h-8 text-cyan-400" />
             <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent">
-              方言トランスレーター
+              どげんこつ？
             </h1>
           </div>
           <p className="text-gray-300 text-lg">日本全国の方言を楽しく学ぼう</p>
