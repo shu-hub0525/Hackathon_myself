@@ -48,7 +48,7 @@ const DialectTranslator: React.FC = () => {
     direction: TranslationDirection
   ): Promise<string> => {
     // バックエンドのURL（PythonサーバーのURLに合わせて変更してください）
-    const API_ENDPOINT = "http://localhost:8000/translate";
+    const API_ENDPOINT = "https://dogenkotu.onrender.com";
 
     const response = await fetch(API_ENDPOINT, {
       method: "POST",
